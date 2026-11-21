@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Random Auto Refresh HUD (2-3 min)
 // @namespace    https://violentmonkey.local/refresh-hud
-// @version      1.1.0
-// @description  Displays a non-interactive countdown HUD and refreshes every 2-3 minutes
+// @version      1.2.0
+// @description  Displays a non-interactive bottom-left countdown HUD at max z-index and refreshes every 2-3 minutes
 // @match        https://vibbletv.blogspot.com/*
 // @run-at       document-idle
 // @grant        none
@@ -20,18 +20,21 @@
   const hud = document.createElement('div');
   hud.id = 'vm-refresh-hud';
   hud.style.cssText = [
-    'position: fixed',
-    'top: 10px',
-    'right: 10px',
-    'z-index: 2147483647',
-    'padding: 5px 9px',
-    'border-radius: 6px',
-    'background: rgba(15, 15, 20, 0.78)',
-    'color: #ffffff',
-    'font: 600 12px/1.2 -apple-system, BlinkMacSystemFont, monospace',
-    'pointer-events: none',
-    'user-select: none',
-    'box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25)'
+    'position: fixed !important',
+    'bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important',
+    'left: calc(12px + env(safe-area-inset-left, 0px)) !important',
+    'top: auto !important',
+    'right: auto !important',
+    'z-index: 2147483647 !important',
+    'padding: 5px 9px !important',
+    'border-radius: 6px !important',
+    'background: rgba(15, 15, 20, 0.82) !important',
+    'color: #ffffff !important',
+    'font: 600 12px/1.2 -apple-system, BlinkMacSystemFont, monospace !important',
+    'pointer-events: none !important',
+    'user-select: none !important',
+    '-webkit-user-select: none !important',
+    'box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important'
   ].join(';');
 
   function formatRemaining(ms) {
@@ -51,7 +54,17 @@
     hud.textContent = `Refresh in ${formatRemaining(remaining)}`;
   }
 
-  (document.body || document.documentElement).appendChild(hud);
+  function ensureMounted() {
+    const root = document.body || document.documentElement;
+    if (root && !document.getElementById('vm-refresh-hud')) {
+      root.appendChild(hud);
+    }
+  }
+
+  ensureMounted();
   tick();
-  setInterval(tick, 1000);
+  setInterval(() => {
+    ensureMounted();
+    tick();
+  }, 1000);
 })();
